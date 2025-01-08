@@ -22,9 +22,10 @@ int main(int argc, char **argv)
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
 
     bool visualization = true;
-    ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
+    auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
+    // ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
 
-    auto node = std::make_shared<RgbdSlamNode>(&SLAM);
+    auto node = std::make_shared<RgbdSlamNode>(pSLAM);
     std::cout << "============================ " << std::endl;
 
     rclcpp::spin(node);

@@ -4,12 +4,17 @@
 
 using std::placeholders::_1;
 
-RgbdSlamNode::RgbdSlamNode(ORB_SLAM3::System* pSLAM)
+RgbdSlamNode::RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM)
 :   Node("ORB_SLAM3_ROS2"),
     m_SLAM(pSLAM)
 {
-    rgb_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(shared_ptr<rclcpp::Node>(this), "camera/rgb");
-    depth_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(shared_ptr<rclcpp::Node>(this), "camera/depth");
+
+    // rgb_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(shared_ptr<rclcpp::Node>(this), "/rgb_f/image_color");
+    // depth_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(shared_ptr<rclcpp::Node>(this), "/depth_f/image");
+    // FIX: https://github.com/zang09/ORB_SLAM3_ROS2/issues/24
+
+    rgb_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(this, "/rgb_f/image_color");
+    depth_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(this, "/depth_f/image");
 
     syncApproximate = std::make_shared<message_filters::Synchronizer<approximate_sync_policy> >(approximate_sync_policy(10), *rgb_sub, *depth_sub);
     syncApproximate->registerCallback(&RgbdSlamNode::GrabRGBD, this);
@@ -18,6 +23,7 @@ RgbdSlamNode::RgbdSlamNode(ORB_SLAM3::System* pSLAM)
 
 RgbdSlamNode::~RgbdSlamNode()
 {
+    RCLCPP_INFO(this->get_logger(), "Shutting down SLAM...");
     // Stop all threads
     m_SLAM->Shutdown();
 
@@ -27,6 +33,9 @@ RgbdSlamNode::~RgbdSlamNode()
 
 void RgbdSlamNode::GrabRGBD(const ImageMsg::SharedPtr msgRGB, const ImageMsg::SharedPtr msgD)
 {
+    // RCLCPP_INFO(this->get_logger(), "Received RGB message, timestamp: %d", msgRGB->header.stamp.sec);
+    // RCLCPP_INFO(this->get_logger(), "Received Depth message, timestamp: %d", msgD->header.stamp.sec);
+    
     // Copy the ros rgb image message to cv::Mat.
     try
     {
