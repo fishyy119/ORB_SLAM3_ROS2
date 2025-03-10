@@ -10,10 +10,23 @@
 
 int main(int argc, char **argv)
 {
-    if(argc < 3)
-    {
+    int suffix;
+
+    // std::cout << argc << std::endl;
+    if(argc < 3) {  // 这个参数数量貌似只在使用ros2 run的时候才匹配
         std::cerr << "\nUsage: ros2 run orbslam rgbd path_to_vocabulary path_to_settings" << std::endl;
         return 1;
+    }
+    else {
+        try {
+            suffix = std::stoi(argv[3]);
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "Invalid argument: suffix must be an integer." << std::endl;
+            return 2;
+        } catch (const std::out_of_range& e) {
+            std::cerr << "Out of range: suffix value is too large." << std::endl;
+            return 2;
+        }
     }
 
     rclcpp::init(argc, argv);
@@ -21,11 +34,12 @@ int main(int argc, char **argv)
     // malloc error using new.. try shared ptr
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
 
-    bool visualization = true;
-    auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
+    bool correct = true;
+    auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, correct, true);  //* 使用重载版本，倒数第二个correct
+    // auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, true);  // 这里的true如果用变量代替，编译器会搞不清楚使用哪个重载
     // ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
 
-    auto node = std::make_shared<RgbdSlamNode>(pSLAM);
+    auto node = std::make_shared<RgbdSlamNode>(pSLAM, suffix);
     std::cout << "============================ " << std::endl;
 
     rclcpp::spin(node);

@@ -8,6 +8,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "std_msgs/msg/float64.hpp"
+#include "geometry_msgs/msg/pose.hpp"
 
 #include "message_filters/subscriber.h"
 #include "message_filters/synchronizer.h"
@@ -25,7 +27,7 @@
 class RgbdSlamNode : public rclcpp::Node
 {
 public:
-    RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM);
+    RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM, int suffix);
 
     ~RgbdSlamNode();
 
@@ -41,8 +43,13 @@ private:
     cv_bridge::CvImageConstPtr cv_ptrRGB;
     cv_bridge::CvImageConstPtr cv_ptrD;
 
+    double m_simulation_time;
+    geometry_msgs::msg::Pose m_pose;
+
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > rgb_sub;
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > depth_sub;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr sim_time_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub;
 
     std::shared_ptr<message_filters::Synchronizer<approximate_sync_policy> > syncApproximate;
 };
