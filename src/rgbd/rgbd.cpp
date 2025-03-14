@@ -12,8 +12,7 @@ int main(int argc, char **argv)
 {
     int suffix;
 
-    // std::cout << argc << std::endl;
-    if(argc < 3) {  // 这个参数数量貌似只在使用ros2 run的时候才匹配
+    if(argc < 3) {
         std::cerr << "\nUsage: ros2 run orbslam rgbd path_to_vocabulary path_to_settings" << std::endl;
         return 1;
     }
@@ -28,6 +27,12 @@ int main(int argc, char **argv)
             return 2;
         }
     }
+
+    // 错开不同巡视器的各种自增id
+    ORB_SLAM3::Frame::nNextId = 1e7 * (suffix - 1);
+    ORB_SLAM3::KeyFrame::nNextId = 1e7 * (suffix - 1);
+    ORB_SLAM3::Map::nNextId = 1e7 * (suffix - 1);
+    ORB_SLAM3::MapPoint::nNextId = 1e7 * (suffix - 1);
 
     rclcpp::init(argc, argv);
 

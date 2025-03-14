@@ -17,6 +17,7 @@ RgbdSlamNode::RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM, int suffix)
     std::string depth_topic = "/depth_f/img_" + std::to_string(suffix);
     std::string pose_topic = "robot_pose_" + std::to_string(suffix);
     std::string sim_time_topic = "simulation_time_" + std::to_string(suffix);
+    m_suffix = suffix;
 
     rgb_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(this, rgb_topic);
     depth_sub = std::make_shared<message_filters::Subscriber<ImageMsg> >(this, depth_topic);
@@ -47,8 +48,11 @@ RgbdSlamNode::~RgbdSlamNode()
     // Stop all threads
     m_SLAM->Shutdown();
 
+    // 不使用配置文件设置保存路径，在这里手动调用
+    m_SLAM->SaveAtlasWithPath(ORB_SLAM3::System::FileType::BINARY_FILE, "atlas_" + std::to_string(m_suffix));
+
     // Save camera trajectory
-    m_SLAM->SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    m_SLAM->SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory_" + std::to_string(m_suffix) + ".txt");
 }
 
 void RgbdSlamNode::GrabRGBD(const ImageMsg::SharedPtr msgRGB, const ImageMsg::SharedPtr msgD)

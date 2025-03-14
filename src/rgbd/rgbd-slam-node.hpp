@@ -45,6 +45,7 @@ private:
 
     double m_simulation_time;
     geometry_msgs::msg::Pose m_pose;
+    int m_suffix;
 
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > rgb_sub;
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > depth_sub;
