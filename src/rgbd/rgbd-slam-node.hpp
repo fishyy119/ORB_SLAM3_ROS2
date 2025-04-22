@@ -51,6 +51,7 @@ private:
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > depth_sub;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr sim_time_sub;
     rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr pose_sub;
+    rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr pose_pub;
 
     std::shared_ptr<message_filters::Synchronizer<approximate_sync_policy> > syncApproximate;
 };
