@@ -27,7 +27,7 @@
 class RgbdSlamNode : public rclcpp::Node
 {
 public:
-    RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM, int suffix);
+    RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM, int suffix, bool use_new_method);
 
     ~RgbdSlamNode();
 
@@ -46,6 +46,7 @@ private:
     double m_simulation_time;
     geometry_msgs::msg::Pose m_pose;
     int m_suffix;
+    bool use_new_method;
 
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > rgb_sub;
     std::shared_ptr<message_filters::Subscriber<sensor_msgs::msg::Image> > depth_sub;

@@ -39,16 +39,18 @@ int main(int argc, char **argv)
     // malloc error using new.. try shared ptr
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
 
-    bool correct = true;
+    // bool correct = true;
+    bool correct = false;
     auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, correct, true);  //* 使用重载版本，倒数第二个correct
-    // auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, true);  // 这里的true如果用变量代替，编译器会搞不清楚使用哪个重载
-    // ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
-
-    auto node = std::make_shared<RgbdSlamNode>(pSLAM, suffix);
+    auto node = std::make_shared<RgbdSlamNode>(pSLAM, suffix, correct);
     std::cout << "============================ " << std::endl;
 
     rclcpp::spin(node);
     rclcpp::shutdown();
+    
+    // auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, true);  // 这里的true如果用变量代替，编译器会搞不清楚使用哪个重载
+    // ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
+
 
     return 0;
 }
