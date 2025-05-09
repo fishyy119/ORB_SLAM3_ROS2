@@ -29,10 +29,10 @@ int main(int argc, char **argv)
     }
 
     // 错开不同巡视器的各种自增id
-    ORB_SLAM3::Frame::nNextId = 1e7 * (suffix - 1);
-    ORB_SLAM3::KeyFrame::nNextId = 1e7 * (suffix - 1);
-    ORB_SLAM3::Map::nNextId = 1e7 * (suffix - 1);
-    ORB_SLAM3::MapPoint::nNextId = 1e7 * (suffix - 1);
+    ORB_SLAM3::Frame::nNextId = 1e9 * (suffix - 1);
+    ORB_SLAM3::KeyFrame::nNextId = 1e9 * (suffix - 1);
+    ORB_SLAM3::Map::nNextId = 1e9 * (suffix - 1);
+    ORB_SLAM3::MapPoint::nNextId = 1e9 * (suffix - 1);
 
     rclcpp::init(argc, argv);
 
