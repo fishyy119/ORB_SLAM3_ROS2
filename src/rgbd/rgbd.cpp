@@ -12,17 +12,24 @@ int main(int argc, char **argv)
 {
     int suffix;
 
-    if(argc < 3) {
+    if (argc < 3)
+    {
         std::cerr << "\nUsage: ros2 run orbslam rgbd path_to_vocabulary path_to_settings" << std::endl;
         return 1;
     }
-    else {
-        try {
+    else
+    {
+        try
+        {
             suffix = std::stoi(argv[3]);
-        } catch (const std::invalid_argument& e) {
+        }
+        catch (const std::invalid_argument &e)
+        {
             std::cerr << "Invalid argument: suffix must be an integer." << std::endl;
             return 2;
-        } catch (const std::out_of_range& e) {
+        }
+        catch (const std::out_of_range &e)
+        {
             std::cerr << "Out of range: suffix value is too large." << std::endl;
             return 2;
         }
@@ -41,16 +48,15 @@ int main(int argc, char **argv)
 
     // bool correct = true;
     bool correct = false;
-    auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, correct, true);  //* 使用重载版本，倒数第二个correct
+    auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, correct, true); //* 使用重载版本，倒数第二个correct
     auto node = std::make_shared<RgbdSlamNode>(pSLAM, suffix, correct);
     std::cout << "============================ " << std::endl;
 
     rclcpp::spin(node);
     rclcpp::shutdown();
-    
+
     // auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, true);  // 这里的true如果用变量代替，编译器会搞不清楚使用哪个重载
     // ORB_SLAM3::System SLAM(argv[1], argv[2], ORB_SLAM3::System::RGBD, visualization);
-
 
     return 0;
 }
