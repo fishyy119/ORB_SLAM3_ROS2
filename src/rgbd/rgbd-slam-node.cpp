@@ -4,6 +4,21 @@
 
 using std::placeholders::_1;
 
+float sample_truncated_normal(std::normal_distribution<float> &dist,
+                              std::mt19937 &gen,
+                              float sigma_limit = 2.0f)
+{
+    float x;
+    float sigma = dist.stddev(); // 标准差
+
+    do
+    {
+        x = dist(gen);
+    } while (std::abs(x) > sigma_limit * sigma);
+
+    return x;
+}
+
 RgbdSlamNode::RgbdSlamNode(std::shared_ptr<ORB_SLAM3::System> pSLAM, int suffix, bool use_new_method)
     : Node("ORB_SLAM3_ROS2"),
       m_SLAM(pSLAM), m_suffix(suffix), use_new_method(use_new_method)
@@ -87,24 +102,25 @@ void RgbdSlamNode::GrabRGBD(const ImageMsg::SharedPtr msgRGB, const ImageMsg::Sh
     //* 噪声添加
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<float> dist_xy(0.0f, 1.0f); // xy方向标准差 m
-    std::normal_distribution<float> dist_z(0.0f, 0.1f);  // z方向标准差 0.1m
-    // std::normal_distribution<float> dist_r(0.0f, 0.1f);  //
+    std::normal_distribution<float> dist_xy(0.0f, 1.0f);     // xy方向标准差 m
+    std::normal_distribution<float> dist_z(0.0f, 0.1f);      // z方向标准差 0.1m
+    std::normal_distribution<float> dist_theta(0.0f, 0.07f); //
 
-    // 旋转部分添加噪声（四元数）
     Eigen::Quaternionf q(m_pose.orientation.w, m_pose.orientation.x, m_pose.orientation.y, m_pose.orientation.z);
-
-    // 随机扰动旋转
-    // Eigen::Vector3f axis(dist_xy(gen), dist_z(gen), dist_xy(gen)); // 在x, y, z轴上生成噪声(这里是右下前)
-    // Eigen::AngleAxisf noise_angle(axis.norm(), axis.normalized()); // 用旋转轴和角度生成扰动
-
-    // q = noise_angle * q; // 应用旋转扰动
-
-    // 位置部分添加噪声
     Eigen::Vector3f t(m_pose.position.x, m_pose.position.y, m_pose.position.z);
 
+    // 随机扰动旋转
+    Eigen::Vector3f axis(sample_truncated_normal(dist_theta, gen),
+                         sample_truncated_normal(dist_theta, gen),
+                         sample_truncated_normal(dist_theta, gen)); // (这里是右下前)
+    Eigen::AngleAxisf noise_angle(axis.norm(), axis.normalized());  // 用旋转轴和角度生成扰动
+    q = noise_angle * q;                                            // 应用旋转扰动
+
     // 给位置加噪声
-    t += Eigen::Vector3f(dist_xy(gen), dist_xy(gen), dist_z(gen)); // 在x, y, z轴上生成噪声
+    float nx = sample_truncated_normal(dist_xy, gen);
+    float ny = sample_truncated_normal(dist_xy, gen);
+    float nz = sample_truncated_normal(dist_z, gen);
+    t += Eigen::Vector3f(nx, ny, nz);
 
     // 创建带有噪声的 Sophus::SE3f
     Sophus::SE3f poseSophus(q, t);

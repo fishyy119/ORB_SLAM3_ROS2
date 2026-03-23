@@ -46,8 +46,8 @@ int main(int argc, char **argv)
     // malloc error using new.. try shared ptr
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
 
-    // bool correct = true;
-    bool correct = false;
+    bool correct = true;
+    // bool correct = false;
     auto pSLAM = std::make_shared<ORB_SLAM3::System>(argv[1], argv[2], ORB_SLAM3::System::RGBD, correct, true); //* 使用重载版本，倒数第二个correct
     auto node = std::make_shared<RgbdSlamNode>(pSLAM, suffix, correct);
     std::cout << "============================ " << std::endl;
