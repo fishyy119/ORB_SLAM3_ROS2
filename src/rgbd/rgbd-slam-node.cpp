@@ -6,7 +6,7 @@ using std::placeholders::_1;
 
 float sample_truncated_normal(std::normal_distribution<float> &dist,
                               std::mt19937 &gen,
-                              float sigma_limit = 2.0f)
+                              float sigma_limit = 1.5f)
 {
     float x;
     float sigma = dist.stddev(); // 标准差
@@ -102,9 +102,9 @@ void RgbdSlamNode::GrabRGBD(const ImageMsg::SharedPtr msgRGB, const ImageMsg::Sh
     //* 噪声添加
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::normal_distribution<float> dist_xy(0.0f, 1.0f);     // xy方向标准差 m
-    std::normal_distribution<float> dist_z(0.0f, 0.1f);      // z方向标准差 0.1m
-    std::normal_distribution<float> dist_theta(0.0f, 0.07f); //
+    std::normal_distribution<float> dist_xy(0.0f, 1.0f);      // xy方向标准差 m
+    std::normal_distribution<float> dist_z(0.0f, 0.1f);       // z方向标准差 0.1m
+    std::normal_distribution<float> dist_theta(0.0f, 0.001f); //
 
     Eigen::Quaternionf q(m_pose.orientation.w, m_pose.orientation.x, m_pose.orientation.y, m_pose.orientation.z);
     Eigen::Vector3f t(m_pose.position.x, m_pose.position.y, m_pose.position.z);
@@ -114,13 +114,17 @@ void RgbdSlamNode::GrabRGBD(const ImageMsg::SharedPtr msgRGB, const ImageMsg::Sh
                          sample_truncated_normal(dist_theta, gen),
                          sample_truncated_normal(dist_theta, gen)); // (这里是右下前)
     Eigen::AngleAxisf noise_angle(axis.norm(), axis.normalized());  // 用旋转轴和角度生成扰动
-    q = noise_angle * q;                                            // 应用旋转扰动
 
     // 给位置加噪声
     float nx = sample_truncated_normal(dist_xy, gen);
     float ny = sample_truncated_normal(dist_xy, gen);
     float nz = sample_truncated_normal(dist_z, gen);
-    t += Eigen::Vector3f(nx, ny, nz);
+
+    if (m_simulation_time > 2)
+    { // 初始帧参考不加扰动试试
+        t += Eigen::Vector3f(nx, ny, nz);
+        q = noise_angle * q;
+    }
 
     // 创建带有噪声的 Sophus::SE3f
     Sophus::SE3f poseSophus(q, t);
